@@ -8,13 +8,13 @@ package nutcracker
 /*
 Need - потребность
 */
-type Need struct {
-	ID string
-}
+// type Need struct {
+// 	ID string
+// }
 
-type TaskGenerator interface {
-	GenTaskFromNeed(*Need)
-}
+// type TaskGenerator interface {
+// 	GenTaskFromNeed(*Need)
+// }
 
 /*
 Task - задача
