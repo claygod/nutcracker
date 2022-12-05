@@ -31,7 +31,7 @@ func (c *Chainlet) MergeChainlet(ch *Chainlet) {
 }
 
 /*
-hainletContainer - контейнер нужен для того, чтобы иметь возможность сравнить
+ChainletContainer - контейнер нужен для того, чтобы иметь возможность сравнить
 */
 type ChainletContainer struct {
 	// ID uint64 // возможно снаружи
@@ -54,13 +54,17 @@ func MergeChainletContainers(c1 *ChainletContainer, c2 *ChainletContainer) *Chai
 	return out // TODO: реализация возможно упрощена, можно будет доработать
 }
 
-type ChainletRepo interface { // репо цепочек
-	SetNewChainlet(*Chainlet) (ID uint64)
-}
+// type ChainletRepo interface { // репо цепочек
+// 	SetNewChainlet(*Chainlet) (ID uint64)
+// }
 
 var rateCalc CalcChainletRate // TODO: пока проще сделать автономной сущностью, для которой потом найду место
 
 type CalcChainletRate interface {
+	// пока вижу возможность исчитать исходя из длины цепочки (количества действий),
+	// но если дать доступ к AtomicChangerRepo, а в нём внутри всем AtomicChanger назначить какие-то веса
+	// (чтобы у первичных он был маленький, а для вторичных рос с количеством внутренних шагов, т.е. суммой внутренних операций)
+	// TODO: в имплементации доступ к AtomicChangerRepo, где по идентификаторам в цепочке берём конкретный AtomicChanger.GetInnerSteps()
 	CalcRate(*Chainlet) float64
 }
 

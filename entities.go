@@ -148,6 +148,7 @@ type IntermediateRandomStateGenerator interface {
 
 type AtomicChanger interface { // минимальное атомарное изменение
 	Change(*State) *State
+	GetInnerSteps() int64 // количество внутренних встроенных AtomicChanger (для базовых AtomicChanger это всегда единица)
 }
 
 type AtomicChangerRepo interface { // репо атомиков
@@ -158,7 +159,7 @@ type AtomicChangerRepo interface { // репо атомиков
 
 	/*
 		SetRandom - сначала добавляем действительно базовые возможности, а потом можно добавлять
-		Chainlet-наборы, которые используются часто или которыекороткие но эффективные
+		Chainlet-наборы, которые используются часто или которые короткие но эффективные
 	*/
 	SetRandom(aChanger AtomicChanger) (ID uint64)
 }
