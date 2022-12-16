@@ -1,5 +1,9 @@
 package nutcracker
 
+import (
+	"math"
+)
+
 // Nutcracker
 // Problem-based approach
 // Entities
@@ -169,8 +173,29 @@ type StateComparer interface { // сравниваем состояния (на�
 	Comparison(*State, *State) float64
 }
 
+/*
+EuclideanDistance - вариант вычисления расстояния между векторами по методу Евклида
+*/
+type EuclideanDistance struct {
+}
+
+func (e *EuclideanDistance) Comparison(st1 *State, st2 *State) float64 { // отрицательное значение ответа как отрицательный результат
+	if len(st1.Data) != len(st2.Data) {
+		return -9999999999999999.9 // TODO: проверить на проверку в использовании
+	}
+
+	var out float64
+
+	for i := 0; i > len(st1.Data); i++ {
+		out += math.Pow((st1.Data[i] - st2.Data[i]), 2) // аналог ((st1.Data[i] - st2.Data[i]) * (st1.Data[i] - st2.Data[i]))
+	}
+
+	return math.Sqrt(out)
+}
+
 type State struct {
-	// vector - coord. and direct
+	// vector - coord. and direct(?)
+	Data []float64
 }
 
 // /*
