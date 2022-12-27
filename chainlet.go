@@ -11,7 +11,7 @@ import (
 )
 
 type Chainlet struct { // цепочка действий имеющая удовленворяющий результат (смысл)
-	//ID uint64 // возможно снаружи
+	// ID uint64 // возможно снаружи
 	// Rate float64
 	Chain []uint64 // храним идентификаторы а не ссылки чтобы сравнивать цепочки на похожесть
 }
@@ -39,11 +39,9 @@ type ChainletContainer struct {
 	Chainlet *Chainlet
 }
 
-func MergeChainletContainers(c1 *ChainletContainer, c2 *ChainletContainer) *ChainletContainer { // возвращаем НОВЫЙ экземпляр!
-	chOut := append(c1.Chainlet.Chain, c2.Chainlet.Chain...)
-
+func MergeChainletContainers(c1, c2 *ChainletContainer) *ChainletContainer { // возвращаем НОВЫЙ экземпляр!
 	chLetOut := &Chainlet{
-		Chain: chOut,
+		Chain: append(c1.Chainlet.Chain, c2.Chainlet.Chain...),
 	}
 
 	out := &ChainletContainer{
@@ -79,7 +77,7 @@ type ChainletGenerator struct {
 	Comparer     StateComparer
 }
 
-func (c *ChainletGenerator) GenChainlets(maxSimilarity float64, minSimilarity float64, curState *State, targetState *State) []*ChainletContainer {
+func (c *ChainletGenerator) GenChainlets(maxSimilarity, minSimilarity float64, curState, targetState *State) []*ChainletContainer {
 	wg := sync.WaitGroup{}
 	wg.Add(c.MaxVersionsCount)
 
@@ -117,7 +115,7 @@ func (c *ChainletGenerator) GenChainlets(maxSimilarity float64, minSimilarity fl
 /*
 GenChainlet - генерируем цепочку (один из вариантов набора последовательности действий)
 */
-func (c *ChainletGenerator) GenChainlet(maxSimilarity float64, curState *State, targetState *State) *ChainletContainer {
+func (c *ChainletGenerator) GenChainlet(maxSimilarity float64, curState, targetState *State) *ChainletContainer {
 	out := &ChainletContainer{
 		Rate:     0.0,
 		Chainlet: NewChainlet(),
