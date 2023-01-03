@@ -1,5 +1,7 @@
 # nutcracker
 
+[![API documentation](https://godoc.org/github.com/claygod/nutcracker?status.svg)](https://godoc.org/github.com/claygod/nutcracker)
+
 Problem-based approach
 
 ## Задачный подход
@@ -17,4 +19,4 @@ Problem-based approach
 
 # Copyright
 
-Copyright © 2022 Eduard Sesigin. All rights reserved. Contacts: claygod@yandex.ru
+Copyright © 2022-2023 Eduard Sesigin. All rights reserved. Contacts: claygod@yandex.ru
