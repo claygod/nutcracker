@@ -71,7 +71,7 @@ func NewTask(
 	chlGen *ChainletGenerator,
 	rStateGen IntermediateRandomStateGenerator,
 	sComparer StateComparer,
-) *Task { // TODO: доделать заполнение всех полей
+) *Task {
 	return &Task{
 		ID:               id,
 		maxSimilarity:    maxSimilarity,
