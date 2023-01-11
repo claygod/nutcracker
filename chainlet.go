@@ -77,6 +77,15 @@ type ChainletGenerator struct {
 	Comparer     StateComparer
 }
 
+func (c *ChainletGenerator) Copy() *ChainletGenerator {
+	return &ChainletGenerator{
+		MaxChainletLenght: c.MaxChainletLenght,
+		MaxVersionsCount:  c.MaxVersionsCount,
+		ChangersRepo:      c.ChangersRepo,
+		Comparer:          c.Comparer,
+	}
+}
+
 func (c *ChainletGenerator) GenChainlets(maxSimilarity, minSimilarity float64, curState, targetState *State) []*ChainletContainer {
 	wg := sync.WaitGroup{}
 	wg.Add(c.MaxVersionsCount)

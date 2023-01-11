@@ -44,8 +44,8 @@ type Task struct {
 	curState    *State
 	targetState *State
 
-	chlGen    *ChainletGenerator
-	rStateGen IntermediateRandomStateGenerator
+	chlGen *ChainletGenerator
+	// rStateGen IntermediateRandomStateGenerator
 	sComparer StateComparer
 
 	// Шаги, ведущие к цели
@@ -69,7 +69,7 @@ func NewTask(
 	targetState *State,
 
 	chlGen *ChainletGenerator,
-	rStateGen IntermediateRandomStateGenerator,
+	// rStateGen IntermediateRandomStateGenerator,
 	sComparer StateComparer,
 ) *Task { // TODO: доделать заполнение всех полей
 	return &Task{
@@ -83,8 +83,8 @@ func NewTask(
 		curState:    curState,
 		targetState: targetState,
 
-		chlGen:    chlGen,
-		rStateGen: rStateGen,
+		chlGen: chlGen,
+		// rStateGen: rStateGen,
 		sComparer: sComparer,
 
 		// Steps:       make([]*ChainletContainer, 0),
@@ -105,8 +105,8 @@ func (t *Task) Copy() *Task {
 		curState:    t.curState,
 		targetState: t.targetState,
 
-		chlGen:    t.chlGen,
-		rStateGen: t.rStateGen,
+		chlGen: t.chlGen,
+		// rStateGen: t.rStateGen,
 		sComparer: t.sComparer,
 
 		// Steps:       make([]*ChainletContainer, 0), // TODO: пока слайсы не копируем, не знаем, надо ли
@@ -118,27 +118,44 @@ func (t *Task) Copy() *Task {
 func (t *Task) FindChainlets() []*ChainletContainer { // тут мы ищем оптимальный путь
 	decisions := t.chlGen.GenChainlets(t.maxSimilarity, t.minSimilarity, t.curState, t.targetState)
 
-	if len(decisions) == 0 && t.recursionLevel > 0 { // не найдено подходящих решений и ещё можно создавать промежуточные шаги
+	if len(decisions) == 0 && t.recursionLevel > 0 { // не найдено подходящих решений
+
+		// === НИЖЕ РЕШЕНИЕ ПОКА ОТМЕНЕНО ===
+		// и ещё можно создавать промежуточные шаги
 		// генерируем новые (промежуточные) цели, которых можем добиться
 		// и уже в каждой точке промежуточных целей пробуем заново добиться основной цели
 		// (действуем рекурсивно)
+		// === ВЫШЕ РЕШЕНИЕ ПОКА ОТМЕНЕНО ===
 
-		for i := 0; i < t.findDirectsCount; i++ {
-			newState := t.rStateGen.GenTask(t.curState, t.targetState, t.sComparer)
+		// пробуем увеличить количество шагов для достижения цели
+		chlGen := t.chlGen.Copy()
 
-			newTask := t.Copy()
-			newTask.recursionLevel = t.recursionLevel - 1
-			newTask.curState = newState
+		for i := 0; i < t.findDirectsCount; i++ { // вместо i++ надо придумать более интересный механизм
+			chlGen.MaxChainletLenght = t.chlGen.MaxVersionsCount + i
 
-			for _, dt := range newTask.FindChainlets() { // это получаем результаты к промежуточной цели
-				newTask2 := newTask.Copy()
-				newTask2.recursionLevel = t.recursionLevel - 2
+			if de2 := chlGen.GenChainlets(t.maxSimilarity, t.minSimilarity, t.curState, t.targetState); len(de2) > 0 {
+				decisions = append(decisions, de2...)
 
-				for _, dt2 := range newTask2.FindChainlets() { // теперь из промежуточной точки пытамся добраться до основной цели
-					decisions = append(decisions, MergeChainletContainers(dt, dt2))
-				}
+				break
 			}
 		}
+
+		// for i := 0; i < t.findDirectsCount; i++ {
+		// 	newState := t.rStateGen.GenTask(t.curState, t.targetState, t.sComparer)
+
+		// 	newTask := t.Copy()
+		// 	newTask.recursionLevel = t.recursionLevel - 1
+		// 	newTask.curState = newState
+
+		// 	for _, dt := range newTask.FindChainlets() { // это получаем результаты к промежуточной цели
+		// 		newTask2 := newTask.Copy()
+		// 		newTask2.recursionLevel = t.recursionLevel - 2
+
+		// 		for _, dt2 := range newTask2.FindChainlets() { // теперь из промежуточной точки пытамся добраться до основной цели
+		// 			decisions = append(decisions, MergeChainletContainers(dt, dt2))
+		// 		}
+		// 	}
+		// }
 	}
 
 	return decisions
@@ -148,9 +165,9 @@ type TaskCompletionCheck interface {
 	CompletionCheck(*Task, *Task) float64 // оценка скорей всего от 0.0 до 1.0 CompletionCheck
 }
 
-type IntermediateRandomStateGenerator interface {
-	GenTask(*State, *State, StateComparer) *State // генерирование некоторого состояния, находящегося где-то между начальной и конечной задачей
-}
+// type IntermediateRandomStateGenerator interface {
+// 	GenTask(*State, *State, StateComparer) *State // генерирование некоторого состояния, находящегося где-то между начальной и конечной задачей
+// }
 
 /*
 AtomicChanger - атомарный изменятель
