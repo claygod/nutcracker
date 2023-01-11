@@ -8,6 +8,7 @@ package nutcracker
 import (
 	"sort"
 	"sync"
+	"sync/atomic"
 )
 
 type Chainlet struct { // цепочка действий имеющая удовленворяющий результат (смысл)
@@ -59,7 +60,7 @@ func MergeChainletContainers(c1, c2 *ChainletContainer) *ChainletContainer { // 
 var rateCalc CalcChainletRate // TODO: пока проще сделать автономной сущностью, для которой потом найду место
 
 type CalcChainletRate interface {
-	// пока вижу возможность исчитать исходя из длины цепочки (количества действий),
+	// пока вижу возможность считать исходя из длины цепочки (количества действий),
 	// но если дать доступ к AtomicChangerRepo, а в нём внутри всем AtomicChanger назначить какие-то веса
 	// (чтобы у первичных он был маленький, а для вторичных рос с количеством внутренних шагов, т.е. суммой внутренних операций)
 	// TODO: в имплементации доступ к AtomicChangerRepo, где по идентификаторам в цепочке берём конкретный AtomicChanger.GetInnerSteps()
@@ -77,6 +78,16 @@ type ChainletGenerator struct {
 	Comparer     StateComparer
 }
 
+func NewChainletGenerator(maxChainletLenght, maxVersionsCount int, changersRepo AtomicChangerRepo, comparer StateComparer) *ChainletGenerator {
+	return &ChainletGenerator{
+		MaxChainletLenght: maxChainletLenght,
+		MaxVersionsCount:  maxVersionsCount,
+		// TODO: Parallelism
+		ChangersRepo: changersRepo,
+		Comparer:     comparer,
+	}
+}
+
 func (c *ChainletGenerator) Copy() *ChainletGenerator {
 	return &ChainletGenerator{
 		MaxChainletLenght: c.MaxChainletLenght,
@@ -92,17 +103,29 @@ func (c *ChainletGenerator) GenChainlets(maxSimilarity, minSimilarity float64, c
 
 	out := make([]*ChainletContainer, c.MaxVersionsCount)
 
+	var emptyChainlets int64
+
 	for i := 0; i < c.MaxVersionsCount; i++ {
 		num := i
 
 		go func() {
-			out[num] = c.GenChainlet(maxSimilarity, curState, targetState)
+			resp := c.GenChainlet(maxSimilarity, curState, targetState)
+			out[num] = resp
+
+			if resp == nil {
+				atomic.AddInt64(&emptyChainlets, 1)
+			}
 
 			wg.Done()
 		}()
 	}
 
 	wg.Wait()
+
+	// проверяем на содержимое nil в списке
+	if emptyChainlets > 0 {
+		return make([]*ChainletContainer, 0)
+	}
 
 	// сортируем и обрезаем по minSimilarity
 	sort.Slice(out, func(i, j int) bool {
@@ -132,6 +155,10 @@ func (c *ChainletGenerator) GenChainlet(maxSimilarity float64, curState, targetS
 
 	for i := 0; i < c.MaxChainletLenght; i++ {
 		chID, chGer := c.ChangersRepo.GetRandom() // каждый раз берём случайное действие
+		if chID == 0 {                            // ноль означает полное отсутствие цепочек в репе, не из чего выбирать
+			return nil
+		}
+
 		out.Chainlet.Add(chID)
 		curState = chGer.Change(curState)
 
