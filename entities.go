@@ -161,9 +161,9 @@ func (t *Task) FindChainlets() []*ChainletContainer { // тут мы ищем о
 	return decisions
 }
 
-type TaskCompletionCheck interface {
-	CompletionCheck(*Task, *Task) float64 // оценка скорей всего от 0.0 до 1.0 CompletionCheck
-}
+// type TaskCompletionCheck2 interface {
+// 	CompletionCheck(*Task, *Task) float64 // оценка скорей всего от 0.0 до 1.0 CompletionCheck
+// }
 
 // type IntermediateRandomStateGenerator interface {
 // 	GenTask(*State, *State, StateComparer) *State // генерирование некоторого состояния, находящегося где-то между начальной и конечной задачей
