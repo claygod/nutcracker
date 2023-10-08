@@ -57,14 +57,25 @@ func MergeChainletContainers(c1, c2 *ChainletContainer) *ChainletContainer { // 
 // 	SetNewChainlet(*Chainlet) (ID uint64)
 // }
 
-var rateCalc CalcChainletRate // TODO: пока проще сделать автономной сущностью, для которой потом найду место
+//var rateCalc CalcChainletRater // TODO: пока проще сделать автономной сущностью, для которой потом найду место
+var rateCalc = &CalcChainletRate{}
 
-type CalcChainletRate interface {
-	// пока вижу возможность считать исходя из длины цепочки (количества действий),
-	// но если дать доступ к AtomicChangerRepo, а в нём внутри всем AtomicChanger назначить какие-то веса
-	// (чтобы у первичных он был маленький, а для вторичных рос с количеством внутренних шагов, т.е. суммой внутренних операций)
-	// TODO: в имплементации доступ к AtomicChangerRepo, где по идентификаторам в цепочке берём конкретный AtomicChanger.GetInnerSteps()
-	CalcRate(*Chainlet) float64
+type CalcChainletRate struct { // имплементация пока не юзанного CalcChainletRater
+	// в перспективе пригодится AtomicChangerRepo (см. описание интерфейса CalcChainletRater)
+}
+
+/*
+CalcRate - по сути анализируем, насколько быстрая (эффективная) эта цепочка
+Чем длиней, тем хуже, т.к. потребуется больше шагов для решения задачи
+*/
+func (c *CalcChainletRate) CalcRate(chl *Chainlet) float64 {
+	var sum uint64 = 1
+
+	for i, k := range chl.Chain {
+		sum += uint64(i) * k
+	}
+
+	return 1.0 / float64(sum)
 }
 
 /*
