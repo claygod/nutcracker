@@ -180,7 +180,7 @@ type AtomicChanger interface { // минимальное атомарное из
 	GetInnerSteps() int64 // количество внутренних встроенных AtomicChanger (для базовых AtomicChanger это всегда единица)
 }
 
-type AtomicChangerRepo interface { // репо атомиков
+type AtomicChangerRepo interface { // DONE: AtomicChangerRepository репо атомиков
 	/*
 	   GetRandom - берём случайную, это удобно для генерации случайного Chainlet-набора
 	*/
@@ -194,7 +194,7 @@ type AtomicChangerRepo interface { // репо атомиков
 	// NOTE: пока не требуется но возможно будет нужен Get(ID uint64) (aChanger AtomicChanger)
 }
 
-type StateComparer interface { // сравниваем состояния (направление и координаты)
+type StateComparer interface { // DONE: EuclideanDistance сравниваем состояния (направление и координаты)
 	Comparison(*State, *State) float64
 }
 
@@ -238,7 +238,7 @@ type State struct {
 //                // когда точно надо остановить поиски путей (Chainlet) её выполнения
 // }
 
-type CalcChainletRater interface {
+type CalcChainletRater interface { // DONE: имплементированно в CalcChainletRate
 	// пока вижу возможность считать исходя из длины цепочки (количества действий),
 	// но если дать доступ к AtomicChangerRepo, а в нём внутри всем AtomicChanger назначить какие-то веса
 	// (чтобы у первичных он был маленький, а для вторичных рос с количеством внутренних шагов, т.е. суммой внутренних операций)
