@@ -3,7 +3,7 @@ package nutcracker
 // Nutcracker
 // Problem-based approach
 // Chainlet
-// Copyright © 2022 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
+// Copyright © 2022-2024 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
 	"sort"
@@ -57,7 +57,7 @@ func MergeChainletContainers(c1, c2 *ChainletContainer) *ChainletContainer { // 
 // 	SetNewChainlet(*Chainlet) (ID uint64)
 // }
 
-//var rateCalc CalcChainletRater // TODO: пока проще сделать автономной сущностью, для которой потом найду место
+// var rateCalc CalcChainletRater // TODO: пока проще сделать автономной сущностью, для которой потом найду место
 var rateCalc = &CalcChainletRate{}
 
 type CalcChainletRate struct { // имплементация пока не юзанного CalcChainletRater

@@ -7,7 +7,7 @@ import (
 // Nutcracker
 // Problem-based approach
 // Entities
-// Copyright © 2022 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
+// Copyright © 2022-2024 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 /*
 Need - потребность
@@ -223,6 +223,16 @@ func (e *EuclideanDistance) Comparison(st1, st2 *State) float64 { // отриц�
 type State struct {
 	// vector - coord. and direct(?)
 	Data []float64
+}
+
+func (s *State) Copy() *State {
+	stateOut := &State{
+		Data: make([]float64, len(s.Data)),
+	}
+
+	copy(stateOut.Data, s.Data)
+
+	return stateOut
 }
 
 // /*
