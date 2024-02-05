@@ -8,7 +8,7 @@ import (
 // Nutcracker
 // Problem-based approach
 // Atomic changer (implementation)
-// Copyright © 2022 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
+// Copyright © 2022-2023 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 /*
 AtomicChangerRepository - имплементация интерфейса AtomicChangerRepo
