@@ -14,16 +14,16 @@ import (
 type Chainlet struct { // цепочка действий имеющая удовленворяющий результат (смысл)
 	// ID uint64 // возможно снаружи
 	// Rate float64
-	Chain []uint64 // храним идентификаторы а не ссылки чтобы сравнивать цепочки на похожесть
+	Chain []int64 // храним идентификаторы а не ссылки чтобы сравнивать цепочки на похожесть
 }
 
 func NewChainlet() *Chainlet {
 	return &Chainlet{
-		Chain: make([]uint64, 0),
+		Chain: make([]int64, 0),
 	}
 }
 
-func (c *Chainlet) Add(chID uint64) {
+func (c *Chainlet) Add(chID int64) {
 	c.Chain = append(c.Chain, chID)
 }
 
@@ -69,13 +69,14 @@ CalcRate - по сути анализируем, насколько быстра
 Чем длиней, тем хуже, т.к. потребуется больше шагов для решения задачи
 */
 func (c *CalcChainletRate) CalcRate(chl *Chainlet) float64 {
-	var sum uint64 = 1
+	// var sum int64 = 1
 
-	for i, k := range chl.Chain {
-		sum += uint64(i) * k
-	}
+	// for i, k := range chl.Chain {
+	// 	sum += int64(i) * k
+	// }
 
-	return 1.0 / float64(sum)
+	// return 1.0 / float64(sum)
+	return 1.0 / float64(len(chl.Chain))
 }
 
 /*
@@ -108,7 +109,7 @@ func (c *ChainletGenerator) Copy() *ChainletGenerator {
 	}
 }
 
-func (c *ChainletGenerator) GenChainlets(maxSimilarity, minSimilarity float64, curState, targetState *State) []*ChainletContainer {
+func (c *ChainletGenerator) GenChainlets(rateSimilarity, minSimilarity float64, curState, targetState *State) []*ChainletContainer {
 	wg := sync.WaitGroup{}
 	wg.Add(c.MaxVersionsCount)
 
@@ -120,7 +121,7 @@ func (c *ChainletGenerator) GenChainlets(maxSimilarity, minSimilarity float64, c
 		num := i
 
 		go func() {
-			resp := c.GenChainlet(maxSimilarity, curState, targetState)
+			resp := c.GenChainlet(rateSimilarity, curState, targetState)
 			out[num] = resp
 
 			if resp == nil {
@@ -140,7 +141,7 @@ func (c *ChainletGenerator) GenChainlets(maxSimilarity, minSimilarity float64, c
 
 	// сортируем и обрезаем по minSimilarity
 	sort.Slice(out, func(i, j int) bool {
-		return out[i].Rate < out[j].Rate
+		return out[i].Rate > out[j].Rate
 	})
 
 	// обрезаем по minSimilarity
@@ -158,7 +159,8 @@ func (c *ChainletGenerator) GenChainlets(maxSimilarity, minSimilarity float64, c
 /*
 GenChainlet - генерируем цепочку (один из вариантов набора последовательности действий)
 */
-func (c *ChainletGenerator) GenChainlet(maxSimilarity float64, curState, targetState *State) *ChainletContainer {
+func (c *ChainletGenerator) GenChainlet(rateSimilarity float64, curState, targetState *State) *ChainletContainer {
+	// fmt.Println("STEP 301 ", rateSimilarity)
 	out := &ChainletContainer{
 		Rate:     0.0,
 		Chainlet: NewChainlet(),
@@ -166,14 +168,17 @@ func (c *ChainletGenerator) GenChainlet(maxSimilarity float64, curState, targetS
 
 	for i := 0; i < c.MaxChainletLenght; i++ {
 		chID, chGer := c.ChangersRepo.GetRandom() // каждый раз берём случайное действие
-		if chID == 0 {                            // ноль означает полное отсутствие цепочек в репе, не из чего выбирать
+		if chID == -1 {                           // ноль означает полное отсутствие цепочек в репе, не из чего выбирать
 			return nil
 		}
-
+		// fmt.Println("STEP 303 ", chID, chGer)
 		out.Chainlet.Add(chID)
 		curState = chGer.Change(curState)
-
-		if out.Rate = c.Comparer.Comparison(curState, targetState); out.Rate >= maxSimilarity {
+		//fmt.Println("STEP 304 -измененный текущий статус- ", curState)
+		out.Rate = c.Comparer.Comparison(curState, targetState)
+		//fmt.Println("STEP 305 -похожесть- ", out.Rate)
+		if out.Rate < rateSimilarity {
+			//fmt.Println("STEP 306 -ПОДОШЛО!!- ", out.Rate)
 			break
 		}
 	}

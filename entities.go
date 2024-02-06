@@ -184,14 +184,14 @@ type AtomicChangerRepo interface { // DONE: AtomicChangerRepository репо а�
 	/*
 	   GetRandom - берём случайную, это удобно для генерации случайного Chainlet-набора
 	*/
-	GetRandom() (ID uint64, aChanger AtomicChanger)
+	GetRandom() (ID int64, aChanger AtomicChanger)
 
 	/*
 		SetRandom - сначала добавляем действительно базовые возможности, а потом можно добавлять
 		Chainlet-наборы, которые используются часто или которые короткие но эффективные
 	*/
-	Set(aChanger AtomicChanger) (ID uint64)
-	// NOTE: пока не требуется но возможно будет нужен Get(ID uint64) (aChanger AtomicChanger)
+	Set(aChanger AtomicChanger) (ID int64)
+	// NOTE: пока не требуется но возможно будет нужен Get(ID int64) (aChanger AtomicChanger)
 }
 
 type StateComparer interface { // DONE: EuclideanDistance сравниваем состояния (направление и координаты)
@@ -207,14 +207,17 @@ type EuclideanDistance struct {
 }
 
 func (e *EuclideanDistance) Comparison(st1, st2 *State) float64 { // отрицательное значение ответа как отрицательный результат
-	if len(st1.Data) != len(st2.Data) {
+	// fmt.Println("STEP 500 -len- ", len(st1.Data), len(st2.Data))
+	if len(st1.Data) < len(st2.Data) {
 		return -9999999999999999.9 // TODO: проверить на проверку в использовании
 	}
 
 	var out float64
 
-	for i := 0; i > len(st1.Data); i++ {
+	for i := 0; i < len(st1.Data); i++ {
+		// fmt.Println("STEP 501 -out- ", out)
 		out += math.Pow((st1.Data[i] - st2.Data[i]), 2) // nolint: gomnd
+		// fmt.Println("STEP 502 -out- ", out)
 	}
 
 	return math.Sqrt(out)
