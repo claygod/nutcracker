@@ -35,14 +35,14 @@ func TestChainletGeneratorEasy(t *testing.T) {
 	}
 
 	state2 := &State{
-		Data: []float64{0.005, 0.000},
+		Data: []float64{0.007, 0.000},
 	}
 
 	fmt.Println(chg.GenChainlets(0.002, 0.001, state1, state2))
 	containers := chg.GenChainlets(0.002, 0.001, state1, state2)
 
 	for _, ctnr := range containers {
-		fmt.Println("RATE: ", ctnr.Rate)
+		fmt.Println("RATE: ", ctnr.Distance)
 		fmt.Println("ШАГИ сколько: ", len(ctnr.Chainlet.Chain))
 		fmt.Println("ШАГИ какие: ", ctnr.Chainlet.Chain)
 	}
