@@ -6,7 +6,6 @@ package nutcracker
 // Copyright © 2022-2024 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
-	"fmt"
 	"sort"
 	"sync"
 )
@@ -15,23 +14,27 @@ type Chainlet struct { // цепочка действий имеющая удо�
 	// ID uint64 // возможно снаружи
 	// Rate float64
 	countSteps int64
-	Chain      []int64 // храним идентификаторы а не ссылки чтобы сравнивать цепочки на похожесть
+	ChainIDs   []int64 // храним идентификаторы а не ссылки чтобы сравнивать цепочки на похожесть
+	ChainNames []string
 }
 
 func NewChainlet() *Chainlet {
 	return &Chainlet{
-		Chain: make([]int64, 0),
+		ChainIDs:   make([]int64, 0),
+		ChainNames: make([]string, 0),
 	}
 }
 
-func (c *Chainlet) Add(chID int64, steps int64) {
+func (c *Chainlet) Add(chID int64, chName string, steps int64) {
 	c.countSteps += steps
-	c.Chain = append(c.Chain, chID)
+	c.ChainIDs = append(c.ChainIDs, chID)
+	c.ChainNames = append(c.ChainNames, chName)
 }
 
 func (c *Chainlet) MergeChainlet(ch *Chainlet) {
 	c.countSteps += ch.GetCountSteps()
-	c.Chain = append(c.Chain, ch.Chain...)
+	c.ChainIDs = append(c.ChainIDs, ch.ChainIDs...)
+	c.ChainNames = append(c.ChainNames, ch.ChainNames...)
 }
 
 func (c *Chainlet) GetCountSteps() int64 {
@@ -156,9 +159,9 @@ func (c *ChainletGenerator) GenChainlets(rateSimilarity, minSimilarity float64, 
 			outWithoutNil = append(outWithoutNil, item)
 		}
 	}
-	fmt.Println(out)
+	//fmt.Println(out)
 	out = outWithoutNil
-	fmt.Println(out)
+	//fmt.Println(out)
 	// if emptyChainlets > 0 {
 	// 	return make([]*ChainletContainer, 0)
 	// }
@@ -177,7 +180,7 @@ func (c *ChainletGenerator) GenChainlets(rateSimilarity, minSimilarity float64, 
 			return iv.GetChainletStepsCount() < jv.GetChainletStepsCount()
 		}
 	})
-	fmt.Println(out)
+	//fmt.Println(out)
 
 	// обрезаем по minSimilarity
 	outMinSimilarity := make([]*ChainletContainer, 0, len(out))
@@ -215,7 +218,7 @@ func (c *ChainletGenerator) GenChainlet(rateSimilarity float64, curState, target
 			return nil
 		}
 		// fmt.Println("STEP 303 ", chID, chGer)
-		out.Chainlet.Add(chID, chGer.GetInnerSteps())
+		out.Chainlet.Add(chID, chGer.GetName(), chGer.GetInnerSteps())
 		curState = chGer.Change(curState)
 		//fmt.Println("STEP 304 -измененный текущий статус- ", curState)
 		out.Distance = c.Comparer.Comparison(curState, targetState)

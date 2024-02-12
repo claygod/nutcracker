@@ -15,10 +15,10 @@ func TestChainletGeneratorEasy(t *testing.T) {
 		return 0
 	}
 	achr := NewAtomicChangerRepository()
-	achr.Set(newChangerIncrement(levelFunc, 0.000)) // бесполезный атомайзер
-	achr.Set(newChangerIncrement(levelFunc, 0.0011))
-	achr.Set(newChangerIncrement(levelFunc, 0.0021))
-	achr.Set(newChangerIncrement(levelFunc, 0.0031))
+	achr.Set(newChangerIncrement(levelFunc, "i0", 0.000)) // бесполезный атомайзер
+	achr.Set(newChangerIncrement(levelFunc, "i1", 0.0011))
+	achr.Set(newChangerIncrement(levelFunc, "i2", 0.0021))
+	achr.Set(newChangerIncrement(levelFunc, "i3", 0.0031))
 
 	// --
 	comparer := &EuclideanDistance{}
@@ -27,7 +27,7 @@ func TestChainletGeneratorEasy(t *testing.T) {
 		t.Errorf("Want 4, have %d", achr.counter)
 	}
 
-	chg := NewChainletGenerator(10, 300, achr, comparer)
+	chg := NewChainletGenerator(10, 100, achr, comparer)
 
 	chg.Copy()
 	state1 := &State{
@@ -38,12 +38,12 @@ func TestChainletGeneratorEasy(t *testing.T) {
 		Data: []float64{0.007, 0.000},
 	}
 
-	fmt.Println(chg.GenChainlets(0.002, 0.001, state1, state2))
 	containers := chg.GenChainlets(0.002, 0.001, state1, state2)
 
 	for _, ctnr := range containers {
 		fmt.Println("RATE: ", ctnr.Distance)
-		fmt.Println("ШАГИ сколько: ", len(ctnr.Chainlet.Chain))
-		fmt.Println("ШАГИ какие: ", ctnr.Chainlet.Chain)
+		fmt.Println("ШАГИ сколько: ", len(ctnr.Chainlet.ChainIDs))
+		// fmt.Println("ШАГИ какие ID: ", ctnr.Chainlet.ChainIDs)
+		fmt.Println("ШАГИ какие Name: ", ctnr.Chainlet.ChainNames)
 	}
 }

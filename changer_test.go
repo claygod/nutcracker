@@ -11,14 +11,14 @@ import (
 
 func TestChangerEasy(t *testing.T) {
 	achr := NewAtomicChangerRepository()
-	achr.Set(newChangerIncrement(nil, 0.001))
+	achr.Set(newChangerIncrement(nil, "i1", 0.001))
 
 	if achr.counter != 1 {
 		t.Errorf("Want 1, have %d", achr.counter)
 	}
 }
 
-func TestChangerEasy2(t *testing.T) {
+func TestChangerIncrement(t *testing.T) {
 	state1 := &State{
 		Data: []float64{0.1, 0.1},
 	}
@@ -27,7 +27,7 @@ func TestChangerEasy2(t *testing.T) {
 		return 0
 	}
 	achr := NewAtomicChangerRepository()
-	achr.Set(newChangerIncrement(levelFunc, 0.001))
+	achr.Set(newChangerIncrement(levelFunc, "i1", 0.001))
 
 	chID, chCur := achr.GetRandom()
 	if chID != 0 {
@@ -42,17 +42,18 @@ func TestChangerEasy2(t *testing.T) {
 
 // ================== Changer example ==================
 
-func newChangerIncrement(levelFunc func(int) int, delta float64) *ChangerIncrement {
+func newChangerIncrement(levelFunc func(int) int, name string, delta float64) *ChangerIncrement {
 	return &ChangerIncrement{
 		levelFunc: levelFunc,
+		name:      name,
 		delta:     delta,
 	}
 }
 
 type ChangerIncrement struct {
 	levelFunc func(int) int
-	// level int
-	delta float64
+	name      string
+	delta     float64
 }
 
 func (c *ChangerIncrement) Change(stateIn *State) *State {
@@ -71,4 +72,7 @@ func (c *ChangerIncrement) Change(stateIn *State) *State {
 
 func (c *ChangerIncrement) GetInnerSteps() int64 {
 	return 1 // NOTE: для базовых чейнжеров как правило это 1, а остальные должны уметь вычислять число шагов
+}
+func (c *ChangerIncrement) GetName() string {
+	return c.name
 }

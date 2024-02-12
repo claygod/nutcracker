@@ -178,6 +178,7 @@ AtomicChanger - атомарный изменятель
 type AtomicChanger interface { // минимальное атомарное изменение
 	Change(*State) *State
 	GetInnerSteps() int64 // количество внутренних встроенных AtomicChanger (для базовых AtomicChanger это всегда единица)
+	GetName() string
 }
 
 type AtomicChangerRepo interface { // DONE: AtomicChangerRepository репо атомиков
