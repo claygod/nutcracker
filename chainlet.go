@@ -6,8 +6,14 @@ package nutcracker
 // Copyright © 2022-2024 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
+	"log"
 	"sort"
+	"strings"
 	"sync"
+)
+
+const (
+	separator = "#"
 )
 
 type Chainlet struct { // цепочка действий имеющая удовленворяющий результат (смысл)
@@ -39,6 +45,10 @@ func (c *Chainlet) MergeChainlet(ch *Chainlet) {
 
 func (c *Chainlet) GetCountSteps() int64 {
 	return c.countSteps
+}
+
+func (c *Chainlet) GetMultiName() string {
+	return strings.Join(c.ChainNames, separator)
 }
 
 /*
@@ -191,6 +201,8 @@ func (c *ChainletGenerator) GenChainlets(rateSimilarity, minSimilarity float64, 
 		}
 	}
 
+	// по условиям можем первое (лучшее) решение добавлять в репо атомиков
+
 	// for i, chCon := range out {
 	// 	if chCon.Distance < minSimilarity {
 	// 		out = out[:i]
@@ -200,6 +212,19 @@ func (c *ChainletGenerator) GenChainlets(rateSimilarity, minSimilarity float64, 
 	// }
 
 	return out
+}
+
+func (c *ChainletGenerator) SetChainletAsAtomicChanger(ch *ChainletContainer) {
+	// TODO: определиться, подходит ли такое решение (насколько оно идеально)
+	// пока добавляем всегда
+	achs, err := newAtomicChangerSyntheticFromChainlet(*ch.Chainlet, c.ChangersRepo)
+	if err != nil {
+		log.Println(err)
+
+		return
+	}
+
+	c.ChangersRepo.Set(achs)
 }
 
 /*

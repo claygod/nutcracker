@@ -1,6 +1,7 @@
 package nutcracker
 
 import (
+	"fmt"
 	"math"
 )
 
@@ -158,6 +159,12 @@ func (t *Task) FindChainlets() []*ChainletContainer { // тут мы ищем о
 		// }
 	}
 
+	if len(decisions) > 0 {
+		if achs, err := newAtomicChangerSyntheticFromChainlet(*decisions[0].Chainlet, t.chlGen.ChangersRepo); err == nil {
+			fmt.Println("номер добавленного синтетического чейнжера: ", t.chlGen.ChangersRepo.Set(achs))
+		}
+	}
+
 	return decisions
 }
 
@@ -186,6 +193,7 @@ type AtomicChangerRepo interface { // DONE: AtomicChangerRepository репо а�
 	   GetRandom - берём случайную, это удобно для генерации случайного Chainlet-набора
 	*/
 	GetRandom() (ID int64, aChanger AtomicChanger)
+	GetByID(ID int64) (aChanger AtomicChanger, ok bool)
 
 	/*
 		SetRandom - сначала добавляем действительно базовые возможности, а потом можно добавлять

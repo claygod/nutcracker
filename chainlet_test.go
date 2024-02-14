@@ -29,7 +29,9 @@ func TestChainletGeneratorEasy(t *testing.T) {
 
 	chg := NewChainletGenerator(10, 100, achr, comparer)
 
-	chg.Copy()
+	chg = chg.Copy() // вообще тут это пока не нужно
+	fmt.Println(chg.ChangersRepo)
+
 	state1 := &State{
 		Data: []float64{0.000, 0.000},
 	}
@@ -46,4 +48,12 @@ func TestChainletGeneratorEasy(t *testing.T) {
 		// fmt.Println("ШАГИ какие ID: ", ctnr.Chainlet.ChainIDs)
 		fmt.Println("ШАГИ какие Name: ", ctnr.Chainlet.ChainNames)
 	}
+
+	if len(containers) > 0 {
+		if achs, err := newAtomicChangerSyntheticFromChainlet(*containers[0].Chainlet, achr); err == nil {
+			fmt.Println("номер добавленного синтетического чейнжера: ", achr.Set(achs))
+		}
+	}
+
+	fmt.Println(chg.ChangersRepo)
 }
