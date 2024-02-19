@@ -67,6 +67,21 @@ func (c *ChainletContainer) GetChainletStepsCount() int64 {
 	return c.Chainlet.GetCountSteps()
 }
 
+/*
+ProblemWithAnswer - структура которую можно сформировать по результату поиска решения задачи
+С помощью репозитория таких структур можно группировать их по:
+- входному состоянию
+- выходному состоянию
+- дельте между входным и выходным состояниям
+Т.е. можно создать этакую карту Кохонена, по которой можно искать решение задачи/проблемы помимо простого перебора атомарных чейнжеров.
+А каждая секция карты становится похожей на колонку нейронов в мозговой нейросети.
+*/
+type ProblemWithAnswer struct {
+	curState    *State
+	targetState *State
+	answers     []*ChainletContainer
+}
+
 // func MergeChainletContainers222(c1, c2 *ChainletContainer) *ChainletContainer { // возвращаем НОВЫЙ экземпляр!
 // 	chLetOut := &Chainlet{
 // 		Chain: append(c1.Chainlet.Chain, c2.Chainlet.Chain...),
