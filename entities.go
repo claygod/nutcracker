@@ -247,6 +247,16 @@ func (s *State) Copy() *State {
 	return stateOut
 }
 
+func (s *State) Delta(in *State) *State {
+	stateOut := s.Copy()
+
+	for i, _ := range stateOut.Data {
+		stateOut.Data[i] = stateOut.Data[i] - in.Data[i]
+	}
+
+	return stateOut
+}
+
 // /*
 // TaskResource -  учёт ресурсов, выделенных для решения задачи, обычно ресурсы только тратятся,
 // но при каких-то определённых обстоятельствах ресурсы могут и повышаться

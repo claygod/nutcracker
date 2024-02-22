@@ -16,6 +16,12 @@ const (
 	separator = "#"
 )
 
+const (
+	comparisonByStart int = iota
+	comparisonByEnd
+	comparisonByDifference
+)
+
 type Chainlet struct { // цепочка действий имеющая удовленворяющий результат (смысл)
 	// ID uint64 // возможно снаружи
 	// Rate float64
@@ -80,6 +86,55 @@ type ProblemWithAnswer struct {
 	curState    *State
 	targetState *State
 	answers     []*ChainletContainer
+}
+
+type ProblemWithAnswerContainer struct {
+	distance float64
+	pwa      *ProblemWithAnswer
+}
+
+type ProblemWithAnswerRepo struct {
+	сomparer StateComparer
+	list     []*ProblemWithAnswer
+	// TODO: тут добавить поле для расчета и поиска похожестей по curState
+	// TODO: тут добавить поле для расчета и поиска похожестей по targetState
+	// TODO: тут добавить поле для расчета и поиска похожестей по deltaState
+}
+
+func (p *ProblemWithAnswerRepo) Add(pwa *ProblemWithAnswer) {
+	p.list = append(p.list, pwa)
+}
+
+func (p *ProblemWithAnswerRepo) FindByBeginState(state *State, comparisonBy int, rateSimilarity float64) []*ProblemWithAnswerContainer {
+	out := make([]*ProblemWithAnswerContainer, 0)
+
+	for _, pwa := range p.list {
+		var distance float64
+
+		switch comparisonBy {
+		case comparisonByStart:
+			distance = p.сomparer.Comparison(pwa.curState, state)
+
+		case comparisonByEnd:
+			distance = p.сomparer.Comparison(pwa.targetState, state)
+
+		default: // comparisonByDifference
+			distance = p.сomparer.Comparison(pwa.curState.Delta(pwa.targetState), state)
+		}
+
+		if distance < rateSimilarity {
+			pwac := &ProblemWithAnswerContainer{distance: distance, pwa: pwa}
+			out = append(out, pwac)
+		}
+	}
+
+	// сортируем результат по дистанции
+	sort.Slice(out, func(i, j int) bool {
+		iv, jv := out[i], out[j]
+		return iv.distance < jv.distance
+	})
+
+	return out
 }
 
 // func MergeChainletContainers222(c1, c2 *ChainletContainer) *ChainletContainer { // возвращаем НОВЫЙ экземпляр!
