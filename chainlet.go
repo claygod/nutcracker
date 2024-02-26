@@ -85,20 +85,28 @@ ProblemWithAnswer - структура которую можно сформир�
 type ProblemWithAnswer struct {
 	curState    *State
 	targetState *State
+	deltaState  *State
 	answers     []*ChainletContainer
 }
 
 type ProblemWithAnswerContainer struct {
-	distance float64
+	repoID   int
+	distance float64 // дистанция универсальна, по ситуации
 	pwa      *ProblemWithAnswer
+}
+
+type repoIdent struct {
+	repoID   int
+	distance float64
 }
 
 type ProblemWithAnswerRepo struct {
 	сomparer StateComparer
 	list     []*ProblemWithAnswer
-	// TODO: тут добавить поле для расчета и поиска похожестей по curState
-	// TODO: тут добавить поле для расчета и поиска похожестей по targetState
-	// TODO: тут добавить поле для расчета и поиска похожестей по deltaState
+
+	curStateSimilarity    map[int][]repoIdent
+	targetStateSimilarity map[int][]repoIdent
+	deltaStateSimilarity  map[int][]repoIdent
 }
 
 func (p *ProblemWithAnswerRepo) Add(pwa *ProblemWithAnswer) {
@@ -108,7 +116,7 @@ func (p *ProblemWithAnswerRepo) Add(pwa *ProblemWithAnswer) {
 func (p *ProblemWithAnswerRepo) FindByBeginState(state *State, comparisonBy int, rateSimilarity float64) []*ProblemWithAnswerContainer {
 	out := make([]*ProblemWithAnswerContainer, 0)
 
-	for _, pwa := range p.list {
+	for repoID, pwa := range p.list {
 		var distance float64
 
 		switch comparisonBy {
@@ -119,11 +127,12 @@ func (p *ProblemWithAnswerRepo) FindByBeginState(state *State, comparisonBy int,
 			distance = p.сomparer.Comparison(pwa.targetState, state)
 
 		default: // comparisonByDifference
-			distance = p.сomparer.Comparison(pwa.curState.Delta(pwa.targetState), state)
+			distance = p.сomparer.Comparison(pwa.deltaState, state)
+			// дельту надо считать заранее distance = p.сomparer.Comparison(pwa.curState.Delta(pwa.targetState), state)
 		}
 
 		if distance < rateSimilarity {
-			pwac := &ProblemWithAnswerContainer{distance: distance, pwa: pwa}
+			pwac := &ProblemWithAnswerContainer{repoID: repoID, distance: distance, pwa: pwa}
 			out = append(out, pwac)
 		}
 	}
