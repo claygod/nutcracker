@@ -20,10 +20,13 @@ Problem-based approach
 
 ## ToDo
 
-- [ ] имплементация CalcChainletRate (нужна хоть какая-нибудь, базовая)
+- [*] имплементация CalcChainletRate (нужна хоть какая-нибудь, базовая)
 - [ ] имплементация AtomicChanger
-- [ ] имплементация AtomicChangerRepo
+- [*] имплементация AtomicChangerRepository
 - [ ] имплементация StateComparer (возможно снаружи передается при начальном создании)
+- [ ] имплементация ProblemWithAnswer
+- [ ] имплементация ProblemWithAnswerRepo
+- [*] имплементация ChainletGenerator
 
 
 ## Визуализация пакета
@@ -34,4 +37,4 @@ Problem-based approach
 
 # Copyright
 
-Copyright © 2022-2023 Eduard Sesigin. All rights reserved. Contacts: claygod@yandex.ru
+Copyright © 2022-2024 Eduard Sesigin. All rights reserved. Contacts: claygod@yandex.ru
