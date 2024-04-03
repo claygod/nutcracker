@@ -11,7 +11,7 @@ type School struct { // Alphabet
 func (s *School) CreateABCAtomicChanger(name string, curState, targetState *State) AtomicChanger {
 	return &ABCChanger{
 		name:  name,
-		delta: curState.Delta(targetState),
+		delta: targetState.Delta(curState),
 	}
 }
 
