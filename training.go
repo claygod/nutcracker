@@ -71,19 +71,18 @@ func (d *DriftChanger) Change(in *State) *State {
 		return out
 	}
 
-	for u, c := 0, 0; u < shift || c >= d.maxCountChanges; u, c = u+1, c+1 {
+	for u, c := 0, 0; u < shift && c < d.maxCountChanges; u, c = u+1, c+1 {
 		item := &State{
-			Data: out.Data[u:len(d.delta.Data)],
+			Data: out.Data[u : u+len(d.delta.Data)],
 		}
 
 		distance := d.comparer.Comparison(item, d.sample)
-
 		if distance < d.rate {
 			for i := range item.Data {
 				item.Data[i] = item.Data[i] + d.delta.Data[i]
 			}
 
-			u += len(d.delta.Data)
+			u += len(d.delta.Data) - 1
 		}
 	}
 
@@ -91,7 +90,7 @@ func (d *DriftChanger) Change(in *State) *State {
 }
 
 func (d *DriftChanger) GetInnerSteps() int64 {
-	return int64(len(d.delta.Data) / 2)
+	return int64((len(d.delta.Data) / 2) + 1)
 }
 
 func (d *DriftChanger) GetName() string {
