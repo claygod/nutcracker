@@ -190,6 +190,11 @@ type AtomicChanger interface { // минимальное атомарное из
 
 type AtomicChangerRepo interface { // DONE: AtomicChangerRepository репо атомиков
 	/*
+	   GetByTarget - берём наиболее подходящее (близкое) по цели
+	*/
+	GetByTarget(targetState *State) (ID int64, aChanger AtomicChanger)
+
+	/*
 	   GetRandom - берём случайную, это удобно для генерации случайного Chainlet-набора
 	*/
 	GetRandom() (ID int64, aChanger AtomicChanger)

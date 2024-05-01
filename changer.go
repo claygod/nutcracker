@@ -29,6 +29,18 @@ func NewAtomicChangerRepository() *AtomicChangerRepository {
 }
 
 /*
+GetByTarget - берём наиболее подходящее (близкое) по цели
+*/
+func (a *AtomicChangerRepository) GetByTarget(targetState *State) (ID int64, aChanger AtomicChanger) {
+	a.m.Lock()
+	defer a.m.Unlock()
+
+	panic("implement me")
+
+	return 0, nil // TODO: надо имплементировать, если потребуется
+}
+
+/*
 GetRandom - берём случайную, это удобно для генерации случайного Chainlet-набора
 */
 func (a *AtomicChangerRepository) GetRandom() (int64, AtomicChanger) {
@@ -75,6 +87,8 @@ func (a *AtomicChangerRepository) Set(aChanger AtomicChanger) (ID int64) {
 func newAtomicChangerSyntheticFromChainlet(ch Chainlet, chRepo AtomicChangerRepo) (*AtomicChangerSynthetic, error) {
 	chList := make([]AtomicChanger, 0, ch.countSteps)
 
+	// перебираем чтобы получить вместо иденитификаторов сами чейнжеры
+	// кроме того, это защищает от вероятности, что в цепочке будет что-то неидентифицируемое
 	for _, id := range ch.ChainIDs {
 		if ch, ok := chRepo.GetByID(id); ok {
 			chList = append(chList, ch)

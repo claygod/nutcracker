@@ -16,7 +16,7 @@ const (
 	separator = "#"
 )
 
-type Chainlet struct { // цепочка действий имеющая удовленворяющий результат (смысл)
+type Chainlet struct { // цепочка действий имеющая удовлетворяющий результат (смысл)
 	// ID uint64 // возможно снаружи
 	// Rate float64
 	countSteps int64
