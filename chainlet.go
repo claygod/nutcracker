@@ -117,12 +117,12 @@ type ChainletGenerator struct {
 	Comparer     StateComparer
 }
 
-func NewChainletGenerator(maxChainletLenght, maxVersionsCount int, changersRepo AtomicChangerRepo, comparer StateComparer) *ChainletGenerator {
+func NewChainletGenerator(maxChainletLenght, maxVersionsCount int, baseRepo AtomicChangerRepo, comparer StateComparer) *ChainletGenerator {
 	return &ChainletGenerator{
 		MaxChainletLenght: maxChainletLenght,
 		MaxVersionsCount:  maxVersionsCount,
 		// TODO: Parallelism
-		ChangersRepo: changersRepo,
+		ChangersRepo: NewAtomicChangerOverRepository(baseRepo),
 		Comparer:     comparer,
 	}
 }
@@ -217,6 +217,17 @@ func (c *ChainletGenerator) GenChainlets(rateSimilarity, minSimilarity float64, 
 func (c *ChainletGenerator) SetChainletAsAtomicChanger(ch *ChainletContainer) {
 	// TODO: определиться, подходит ли такое решение (насколько оно идеально)
 	// пока добавляем всегда
+
+	isLocal := false
+
+	for _, id := range ch.Chainlet.ChainIDs {
+		if id < 0 {
+			isLocal = true
+
+			break
+		}
+	}
+
 	achs, err := newAtomicChangerSyntheticFromChainlet(*ch.Chainlet, c.ChangersRepo)
 	if err != nil {
 		log.Println(err)
@@ -224,7 +235,7 @@ func (c *ChainletGenerator) SetChainletAsAtomicChanger(ch *ChainletContainer) {
 		return
 	}
 
-	c.ChangersRepo.Set(achs)
+	c.ChangersRepo.Set(achs, isLocal)
 }
 
 /*
@@ -239,7 +250,7 @@ func (c *ChainletGenerator) GenChainlet(rateSimilarity float64, curState, target
 
 	for i := 0; i < c.MaxChainletLenght; i++ {
 		chID, chGer := c.ChangersRepo.GetRandom() // каждый раз берём случайное действие
-		if chID == -1 {                           // ноль означает полное отсутствие цепочек в репе, не из чего выбирать
+		if chID == errID {                        // означает полное отсутствие цепочек в репе, не из чего выбирать
 			return nil
 		}
 		// fmt.Println("STEP 303 ", chID, chGer)

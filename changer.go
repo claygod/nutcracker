@@ -11,6 +11,58 @@ import (
 // Atomic changer (implementation)
 // Copyright © 2022-2024 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
+const errID int64 = 9e+18 // 9000000000000000000 можно 9223372036854775807
+
+type AtomicChangerOverRepository struct {
+	baseRepo  AtomicChangerRepo // основное ререпо, доступное всем
+	innerRepo AtomicChangerRepo // кастомное репо
+}
+
+func NewAtomicChangerOverRepository(baseRepo AtomicChangerRepo) *AtomicChangerOverRepository {
+	return &AtomicChangerOverRepository{
+		baseRepo:  baseRepo,
+		innerRepo: NewAtomicChangerRepository(),
+	}
+}
+
+func (a *AtomicChangerOverRepository) GetByTarget(targetState *State) (ID int64, aChanger AtomicChanger) {
+	panic("implement me")
+
+	return 0, nil
+}
+
+func (a *AtomicChangerOverRepository) GetRandom() (int64, AtomicChanger) {
+	if rand.Int63n(1) == 0 {
+		return a.baseRepo.GetRandom()
+	}
+
+	iID, iAch := a.innerRepo.GetRandom()
+
+	return -iID, iAch
+}
+
+func (a *AtomicChangerOverRepository) GetByID(id int64) (AtomicChanger, bool) {
+	if id >= 0 {
+		return a.baseRepo.GetByID(id)
+	}
+
+	return a.innerRepo.GetByID(-id)
+}
+
+func (a *AtomicChangerOverRepository) Set(aChanger AtomicChanger, opts ...bool) int64 {
+	if len(opts) == 0 || opts[0] == false {
+		return a.baseRepo.Set(aChanger)
+	}
+
+	id := a.innerRepo.Set(aChanger)
+
+	if id != errID {
+		id *= -1
+	}
+
+	return id
+}
+
 /*
 AtomicChangerRepository - имплементация интерфейса AtomicChangerRepo
 */
@@ -23,6 +75,7 @@ type AtomicChangerRepository struct {
 
 func NewAtomicChangerRepository() *AtomicChangerRepository {
 	return &AtomicChangerRepository{
+		m:     sync.Mutex{},
 		names: make(map[string]struct{}),
 		data:  make(map[int64]AtomicChanger),
 	}
@@ -69,12 +122,12 @@ func (a *AtomicChangerRepository) GetByID(id int64) (AtomicChanger, bool) {
 Set - сначала добавляем действительно базовые возможности, а потом можно добавлять
 Chainlet-наборы, которые используются часто или которые короткие но эффективные
 */
-func (a *AtomicChangerRepository) Set(aChanger AtomicChanger) (ID int64) {
+func (a *AtomicChangerRepository) Set(aChanger AtomicChanger, _ ...bool) (ID int64) {
 	a.m.Lock()
 	defer a.m.Unlock()
 
 	if _, ok := a.names[aChanger.GetName()]; ok {
-		return -1 // такой чейнжер есть (возможный вариант для синтетических ченжеров)
+		return errID // такой чейнжер есть (возможный вариант для синтетических ченжеров)
 	}
 
 	a.counter++

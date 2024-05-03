@@ -204,7 +204,7 @@ type AtomicChangerRepo interface { // DONE: AtomicChangerRepository репо а�
 		SetRandom - сначала добавляем действительно базовые возможности, а потом можно добавлять
 		Chainlet-наборы, которые используются часто или которые короткие но эффективные
 	*/
-	Set(aChanger AtomicChanger) (ID int64)
+	Set(aChanger AtomicChanger, opts ...bool) (ID int64)
 	// NOTE: пока не требуется но возможно будет нужен Get(ID int64) (aChanger AtomicChanger)
 }
 
