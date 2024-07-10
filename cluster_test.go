@@ -10,9 +10,13 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"reflect"
 	"testing"
 
 	"github.com/kelindar/dbscan"
+	"github.com/lfritz/clustering"
+	dbscan2 "github.com/lfritz/clustering/dbscan"
+	"github.com/lfritz/clustering/index"
 	"github.com/mash/gokmeans"
 	"github.com/muesli/clusters"
 	"github.com/muesli/kmeans"
@@ -266,4 +270,82 @@ type Point interface {
 	DistanceTo(Point) float64
 	// GetX() float64
 	// GetY() float64
+}
+
+// ============================== github.com/lfritz/clustering ============================
+
+var testPoints = [][2]float64{
+	// cluster a: 3 points
+	{1, 8}, {1, 7}, {2, 7},
+	// cluster b: 8 points
+	{6, 8}, {7, 8},
+	{5, 7}, {6, 7}, {7, 7}, {8, 7},
+	{6, 6}, {7, 6},
+	// cluster c: 8 points
+	{2, 3}, {3, 3}, {1, 2}, {2, 2}, {3, 2}, {2, 1}, {3, 1},
+	{4, 2}, // border point of both c and d
+	// cluster d: 5 points
+	{5, 3}, {5, 2}, {6, 2}, {5, 1},
+}
+
+var testIndex = index.NewTrivialIndex(testPoints)
+
+func TestClusteringDbscan(t *testing.T) {
+	expected := []int{
+		clustering.Noise, clustering.Noise, clustering.Noise,
+		0, 0, 0, 0, 0, 0, 0, 0,
+		1, 1, 1, 1, 1, 1, 1,
+		2, 2, 2, 2, 2,
+	}
+
+	cl := dbscan2.Dbscan(testIndex, 1.1, 4)
+	if !reflect.DeepEqual(cl, expected) {
+		t.Errorf("Dbscan(testIndex, 1.1, 4)\nreturned: %v\nexpected: %v",
+			cl, expected)
+	}
+}
+
+var testPongPoints = [][2]float64{
+	// left wall
+	{0.0, 0.0},
+	{0.0, 1.0},
+	{0.0, 2.0},
+	{0.0, 3.0},
+	{0.0, 4.0},
+	{0.0, 5.0},
+	{0.0, 6.0},
+	// right wall
+	{7.0, 0.0},
+	{7.0, 1.0},
+	{7.0, 2.0},
+	{7.0, 3.0},
+	{7.0, 4.0},
+	{7.0, 5.0},
+	{7.0, 6.0},
+	// ball
+	{3.0, 6.0},
+	{4.0, 6.0},
+	{3.0, 5.0},
+	{4.0, 5.0},
+	// stuff
+	{3.0, 1.0},
+	{4.0, 1.0},
+	{3.0, 0.0},
+	{4.0, 0.0},
+}
+
+var indexPongPoints = index.NewTrivialIndex(testPongPoints)
+
+func TestClusteringDbscanPong(t *testing.T) {
+	expected := []int{
+		0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3,
+	}
+
+	cl := dbscan2.Dbscan(indexPongPoints, 2.1, 4)
+	fmt.Println(len(cl))
+	fmt.Println(cl)
+	if !reflect.DeepEqual(cl, expected) {
+		t.Errorf("Dbscan(testIndex, 1.1, 4)\nreturned: %v\nexpected: %v",
+			cl, expected)
+	}
 }

@@ -4,6 +4,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0/go.mod h1:E/TSTwGwJL78qG/PmXZO1EjYhfJinVAhrmmHX6Z8B9k=
 github.com/kelindar/dbscan v0.0.1 h1:GHXP5MM7Mbybk1vvs4VTLHfUwR6qk9yJQI/gavGteIM=
 github.com/kelindar/dbscan v0.0.1/go.mod h1:vZcdHPCAKte5xXYf/ieORDv6d+sC2fXKo+eJrs7UUQU=
+github.com/lfritz/clustering v0.0.0-20180101124245-a9d970fa57ef h1:XPXBYmA5HSidXOD74bcNl7vLLaQg+6zuKLdLLLlD4Ps=
+github.com/lfritz/clustering v0.0.0-20180101124245-a9d970fa57ef/go.mod h1:HWVpxdFDC2z7tptGimBuv2Db2g1NCrzdEhLah4EOZaY=
 github.com/mash/gokmeans v0.0.0-20170215130432-ea22cff45f59 h1:C7rqeTVPDC/0QZFxfsMvS2y66WjMxQogK8/PTy9Jo0A=
 github.com/mash/gokmeans v0.0.0-20170215130432-ea22cff45f59/go.mod h1:nxv+mR7KuDZRAmEjsCFBQNtWcIty99qUn2Ycbgcns5c=
 github.com/muesli/clusters v0.0.0-20180605185049-a07a36e67d36/go.mod h1:mw5KDqUj0eLj/6DUNINLVJNoPTFkEuGMHtJsXLviLkY=
