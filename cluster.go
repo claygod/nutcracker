@@ -86,11 +86,42 @@ func (p *PointsGroup) genFingerPrint() *FingerPrint {
 	return fp
 }
 
+// type PointsGroupRepoRepo struct {
+// 	data []*PointsGroupRepo
+// }
+
+func NewTaktWrap(prevTakt *TaktWrap, repo *PointsGroupRepo) *TaktWrap {
+	// TODO: тут ГЕНЕРАЦИЯ объектов !!!!!!!!!!!!!!!!!
+
+	newTakt := &TaktWrap{
+		repo: repo,
+		// objs         []*Object
+		previousTakt: prevTakt,
+	}
+
+	return newTakt
+}
+
+type TaktWrap struct {
+	repo         *PointsGroupRepo
+	objs         []*Object
+	previousTakt *TaktWrap
+}
+
+type Object struct {
+	chain []*ObjChainLink
+}
+
 /*
 PointsGroupRepo - набор групп точек одного тика
 */
 type PointsGroupRepo struct {
 	data map[int]*PointsGroup
+}
+
+type ObjChainLink struct {
+	taktNum int
+	pg      *PointsGroup
 }
 
 func (p *PointsGroupRepo) Add(id int, pGroup *PointsGroup) {
