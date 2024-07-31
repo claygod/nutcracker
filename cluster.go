@@ -45,9 +45,7 @@ func (p *PointsGroup) GetFingerPrint() *FingerPrint {
 }
 
 func (p *PointsGroup) genFingerPrint() *FingerPrint {
-	// TODO: implement me
-	// приводим к начальной системе координат и генерируем отпечаток группы
-	fp := &FingerPrint{}
+	fdv := &FingerData{}
 
 	xList := make([]float64, len(p.points))
 	yList := make([]float64, len(p.points))
@@ -62,28 +60,32 @@ func (p *PointsGroup) genFingerPrint() *FingerPrint {
 	sort.Float64s(yList)
 
 	// вычисляем центр
-	fp.medianaX = medianForSorted(xList)
-	fp.medianaY = medianForSorted(yList)
-	fp.centerX = fp.medianaX
-	fp.centerY = fp.medianaY
+	fdv.medianaX = medianForSorted(xList)
+	fdv.medianaY = medianForSorted(yList)
+	// fdv.centerX = fdv.medianaX
+	// fdv.centerY = fdv.medianaY
 
 	// находим габариты
-	fp.minX = xList[0]
-	fp.maxX = xList[len(xList)-1]
+	fdv.minX = xList[0]
+	fdv.maxX = xList[len(xList)-1]
 
-	fp.minY = yList[0]
-	fp.maxY = yList[len(yList)-1]
+	fdv.minY = yList[0]
+	fdv.maxY = yList[len(yList)-1]
 
-	// приволим к началу координат (не всё)
-	fp.medianaX -= fp.minX
-	fp.maxX -= fp.minX
-	fp.minX = 0
+	// приволим к началу координат
+	fdt := &FingerData{
+		minX:     0,
+		maxX:     fdv.maxX - fdv.minX,
+		minY:     0,
+		maxY:     fdv.maxY - fdv.minY,
+		medianaX: fdv.medianaX - fdv.minX,
+		medianaY: fdv.medianaY - fdv.minY,
+	}
 
-	fp.medianaY -= fp.minY
-	fp.maxY -= fp.minY
-	fp.minY = 0
-
-	return fp
+	return &FingerPrint{
+		typeData:  fdt,
+		valueData: fdv,
+	}
 }
 
 // type PointsGroupRepoRepo struct {
@@ -91,7 +93,22 @@ func (p *PointsGroup) genFingerPrint() *FingerPrint {
 // }
 
 func NewTaktWrap(prevTakt *TaktWrap, repo *PointsGroupRepo) *TaktWrap {
-	// TODO: тут ГЕНЕРАЦИЯ объектов !!!!!!!!!!!!!!!!!
+	/*
+		TODO: тут ГЕНЕРАЦИЯ объектов !!!!!!!!!!!!!!!!!
+
+			! каждая pointsGroup это объект
+
+		Но желательно связать каждый объект с объектами предыдущего такта, а при необходимости и пред-предыдущего (м.б. нескольких)
+
+		Надо определить тип	и искать по типу в предыдущем такте
+		А из выбранных по типу выбирать по значению
+
+		Это вообще длинный путь, и вроде ка можно сразу по значению искать
+			Плюсы: отфильтровываем другие типы, всё точнее
+			Минусы: дольше и фильтр по типу может сработать хуже прямого сравнения
+
+		Можно делать прямой поиск, т.е. объект, и искать ему предков, и обратный, предкам искать текущуюее состояние
+	*/
 
 	newTakt := &TaktWrap{
 		repo: repo,
@@ -125,7 +142,7 @@ type ObjChainLink struct {
 }
 
 func (p *PointsGroupRepo) Add(id int, pGroup *PointsGroup) {
-	// TODO: implement me
+	p.data[id] = pGroup
 }
 
 func (p *PointsGroupRepo) Get(id int) *PointsGroup {
@@ -133,9 +150,6 @@ func (p *PointsGroupRepo) Get(id int) *PointsGroup {
 }
 
 func (p *PointsGroupRepo) Grep(pgIn *PointsGroup) []CompareState {
-	// TODO: implement me
-	// тут проходим for-ом
-
 	out := make([]CompareState, len(p.data))
 
 	for i, pg := range p.data {
@@ -161,21 +175,34 @@ type CompareState struct {
 FingerPrint - универсально описание группы точек по которому можно искать похожие
 */
 type FingerPrint struct {
+	typeData  *FingerData
+	valueData *FingerData
+}
+
+type FingerData struct {
 	minX, maxX         float64
 	minY, maxY         float64
 	medianaX, medianaY float64
-	centerX, centerY   float64 // координаты медианы
+	// centerX, centerY   float64 // координаты медианы
 	// variance float64 // дисперсия
 	// density float64 // плотность
 }
 
-func (f *FingerPrint) Finger() []float64 {
+func (f *FingerPrint) Value() []float64 {
 	// TODO: implement me
 	return []float64{
-		f.centerX, f.centerY,
-		f.medianaX, f.medianaY,
-		f.maxX, f.minX,
-		f.maxY, f.minY,
+		f.valueData.medianaX, f.valueData.medianaY,
+		f.valueData.maxX, f.valueData.minX,
+		f.valueData.maxY, f.valueData.minY,
+	}
+}
+
+func (f *FingerPrint) Type() []float64 {
+	// TODO: implement me
+	return []float64{
+		f.typeData.medianaX, f.typeData.medianaY,
+		f.typeData.maxX, f.typeData.minX,
+		f.typeData.maxY, f.typeData.minY,
 	}
 }
 
