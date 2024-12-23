@@ -349,3 +349,7 @@ func TestClusteringDbscanPong(t *testing.T) {
 			cl, expected)
 	}
 }
+
+func TestPointsGroup(t *testing.T) {
+	// TODO: implement me
+}

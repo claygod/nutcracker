@@ -25,12 +25,22 @@ const (
 	coordY
 )
 
+func NewPointsGroup() *PointsGroup {
+	pg := &PointsGroup{
+		points: make([][2]float64, 0),
+	}
+
+	// pg.fingerPrint = pg.genFingerPrint()
+
+	return pg
+}
+
 /*
-PointsGroup - результат кластеризации (один из кластеров)
+PointsGroup - результат кластеризации (один из кластеров) группа точек, кластер
 */
 type PointsGroup struct {
-	points      [][2]float64 // при создании проверять что точки есть (не пустой слайс)
-	fingerPrint *FingerPrint
+	points [][2]float64 // при создании проверять что точки есть (не пустой слайс)
+	// fingerPrint *FingerPrint
 }
 
 func (p *PointsGroup) Compare(in *PointsGroup) float64 {
@@ -40,8 +50,12 @@ func (p *PointsGroup) Compare(in *PointsGroup) float64 {
 	return 0.0
 }
 
+func (p *PointsGroup) Add(point [2]float64) {
+	p.points = append(p.points, point)
+}
+
 func (p *PointsGroup) GetFingerPrint() *FingerPrint {
-	return p.fingerPrint
+	return p.genFingerPrint() // p.fingerPrint
 }
 
 func (p *PointsGroup) genFingerPrint() *FingerPrint {
@@ -72,7 +86,7 @@ func (p *PointsGroup) genFingerPrint() *FingerPrint {
 	fdv.minY = yList[0]
 	fdv.maxY = yList[len(yList)-1]
 
-	// приволим к началу координат
+	// приводим к началу координат
 	fdt := &FingerData{
 		minX:     0,
 		maxX:     fdv.maxX - fdv.minX,
@@ -125,9 +139,9 @@ type TaktWrap struct {
 	previousTakt *TaktWrap
 }
 
-type Object struct {
-	chain []*ObjChainLink
-}
+// type Object struct {
+// 	chain []*ObjChainLink
+// }
 
 /*
 PointsGroupRepo - набор групп точек одного тика
