@@ -63,7 +63,7 @@ func NewPointsGroupFormer(eps float64, minPts int) *PointsGroupFormer {
 	}
 }
 
-func (p *PointsGroupFormer) LoadRawCluster(in [][2]float64) {
+func (p *PointsGroupFormer) AddRawCluster(in [][2]float64) {
 	indexPoints := index.NewTrivialIndex(testPongPoints)
 	cl := dbscan.Dbscan(indexPoints, p.eps, p.minPts)
 
@@ -84,4 +84,8 @@ func (p *PointsGroupFormer) LoadRawCluster(in [][2]float64) {
 
 		p.groups = append(p.groups, curCluster)
 	}
+}
+
+func (p *PointsGroupFormer) LoadGroups() []*PointsGroup {
+	return p.groups
 }

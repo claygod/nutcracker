@@ -350,6 +350,17 @@ func TestClusteringDbscanPong(t *testing.T) {
 	}
 }
 
-func TestPointsGroup(t *testing.T) {
-	// TODO: implement me
+func TestPointsGroupFormer(t *testing.T) {
+	expected := []int{
+		7, 7, 4, 4,
+	}
+
+	pgf := NewPointsGroupFormer(2.1, 4)
+	pgf.AddRawCluster(testPongPoints)
+
+	for i, g := range pgf.LoadGroups() {
+		if expected[i] != len(g.points) {
+			t.Errorf("PointsGroup [%d] len returned: %v len expected: %v", i, expected[i], len(g.points))
+		}
+	}
 }
