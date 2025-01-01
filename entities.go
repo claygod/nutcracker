@@ -242,6 +242,16 @@ type State struct {
 	Data []float64
 }
 
+func NewState(data []float64) *State {
+	return &State{
+		Data: data,
+	}
+}
+
+func (s *State) Add(in []float64) {
+	s.Data = append(s.Data, in...)
+}
+
 func (s *State) Copy() *State {
 	stateOut := &State{
 		Data: make([]float64, len(s.Data)),

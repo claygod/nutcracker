@@ -72,9 +72,7 @@ func (d *DriftChanger) Change(in *State) *State {
 	}
 
 	for u, c := 0, 0; u < shift && c < d.maxCountChanges; u, c = u+1, c+1 {
-		item := &State{
-			Data: out.Data[u : u+len(d.delta.Data)],
-		}
+		item := NewState(out.Data[u : u+len(d.delta.Data)])
 
 		distance := d.comparer.Comparison(item, d.sample)
 		if distance < d.rate {

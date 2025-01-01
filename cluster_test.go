@@ -364,3 +364,31 @@ func TestPointsGroupFormer(t *testing.T) {
 		}
 	}
 }
+
+func TestPointsGroupCompareDeltaZero(t *testing.T) {
+	pg1 := NewPointsGroup()
+	pg1.AddList(testPongPoints)
+
+	pg2 := NewPointsGroup()
+	pg2.AddList(testPongPoints)
+
+	if cmp := pg1.Compare(pg2); cmp != 0.0 {
+		t.Errorf("Compare returned: %f expected: %f", cmp, 0.0)
+	}
+}
+
+func TestPointsGroupCompareDeltaUnzero(t *testing.T) {
+	pg1 := NewPointsGroup()
+	pg1.AddList(testPongPoints)
+
+	pg2 := NewPointsGroup()
+	pg2.AddList(testPongPoints)
+	for i := range pg2.points {
+		pg2.points[i][0] += 0.1
+		pg2.points[i][1] += 0.1
+	}
+
+	if cmp := pg1.Compare(pg2); cmp == 0.0 {
+		t.Errorf("Compare returned: %f expected: nonzero", cmp)
+	}
+}

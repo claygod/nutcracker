@@ -64,7 +64,7 @@ func NewPointsGroupFormer(eps float64, minPts int) *PointsGroupFormer {
 }
 
 func (p *PointsGroupFormer) AddRawCluster(in [][2]float64) {
-	indexPoints := index.NewTrivialIndex(testPongPoints)
+	indexPoints := index.NewTrivialIndex(in)
 	cl := dbscan.Dbscan(indexPoints, p.eps, p.minPts)
 
 	if len(cl) > 0 {

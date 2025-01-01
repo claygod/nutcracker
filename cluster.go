@@ -30,8 +30,6 @@ func NewPointsGroup() *PointsGroup {
 		points: make([][2]float64, 0),
 	}
 
-	// pg.fingerPrint = pg.genFingerPrint()
-
 	return pg
 }
 
@@ -40,18 +38,29 @@ PointsGroup - результат кластеризации (один из кл�
 */
 type PointsGroup struct {
 	points [][2]float64 // при создании проверять что точки есть (не пустой слайс)
-	// fingerPrint *FingerPrint
 }
 
 func (p *PointsGroup) Compare(in *PointsGroup) float64 {
-	// TODO: implement me
 	// поучаем некий finger print
 	// перобразуем его в State и сравниваем
-	return 0.0
+	comp := EuclideanDistance{}
+
+	return comp.Comparison(
+		p.fingerPrint2State(p.GetFingerPrint()),
+		p.fingerPrint2State(in.GetFingerPrint()),
+	)
+}
+
+func (p *PointsGroup) fingerPrint2State(in *FingerPrint) *State {
+	return NewState(append(in.Type(), in.Value()...))
 }
 
 func (p *PointsGroup) Add(point [2]float64) {
 	p.points = append(p.points, point)
+}
+
+func (p *PointsGroup) AddList(points [][2]float64) {
+	p.points = append(p.points, points...)
 }
 
 func (p *PointsGroup) GetFingerPrint() *FingerPrint {
