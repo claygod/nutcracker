@@ -198,8 +198,8 @@ type CompareState struct {
 FingerPrint - универсально описание группы точек по которому можно искать похожие
 */
 type FingerPrint struct {
-	typeData  *FingerData
-	valueData *FingerData
+	typeData  *FingerData // данные, прижатые у началам координат
+	valueData *FingerData // оригинальные данные
 }
 
 type FingerData struct {
@@ -211,22 +211,20 @@ type FingerData struct {
 	// density float64 // плотность
 }
 
-func (f *FingerPrint) Value() []float64 {
-	// TODO: implement me
+func (f *FingerData) GetData() []float64 {
 	return []float64{
-		f.valueData.medianaX, f.valueData.medianaY,
-		f.valueData.maxX, f.valueData.minX,
-		f.valueData.maxY, f.valueData.minY,
+		f.medianaX, f.medianaY,
+		f.maxX, f.minX,
+		f.maxY, f.minY,
 	}
 }
 
+func (f *FingerPrint) Value() []float64 {
+	return f.valueData.GetData()
+}
+
 func (f *FingerPrint) Type() []float64 {
-	// TODO: implement me
-	return []float64{
-		f.typeData.medianaX, f.typeData.medianaY,
-		f.typeData.maxX, f.typeData.minX,
-		f.typeData.maxY, f.typeData.minY,
-	}
+	return f.typeData.GetData()
 }
 
 func medianForSorted(in []float64) float64 {
