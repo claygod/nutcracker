@@ -25,6 +25,33 @@ const (
 	coordY
 )
 
+func NewPointsGroupUnion() *PointsGroupUnion {
+	pgu := &PointsGroupUnion{
+		pgs: make([]*PointsGroup, 0),
+	}
+
+	return pgu
+}
+
+type PointsGroupUnion struct {
+	pgs []*PointsGroup
+}
+
+func (p *PointsGroupUnion) Compare(in *PointsGroupUnion) float64 {
+	resp := 0.0
+
+	for _, curPG := range p.pgs {
+		for _, inPG := range in.pgs {
+			// делим, но можно подумать о более сложном алгоритме, например,
+			// если хоть одна из частей сильно совпадает, то это может говорить о том,
+			// что остальные м.б. пока не видны, поэтому факт похожести хоть одной уже важен
+			resp += curPG.Compare(inPG) / float64(len(p.pgs))
+		}
+	}
+
+	return resp
+}
+
 func NewPointsGroup() *PointsGroup {
 	pg := &PointsGroup{
 		points: make([][2]float64, 0),
@@ -61,6 +88,10 @@ func (p *PointsGroup) Add(point [2]float64) {
 
 func (p *PointsGroup) AddList(points [][2]float64) {
 	p.points = append(p.points, points...)
+}
+
+func (p *PointsGroup) Merge(p2 *PointsGroup) { // слияние двух групп (вариант например когда две отдельных группы имеют одинаковое поведение)
+	p.points = append(p.points, p2.points...)
 }
 
 func (p *PointsGroup) GetFingerPrint() *FingerPrint {

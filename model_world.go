@@ -27,19 +27,54 @@ type ModelWorld struct {
 
 type Object struct { // Alphabet
 	objType         ObjectType
-	lifeBegin       int // метка начала существования объекта
-	lifeEnd         int // метка конца существования объекта
-	curPointsGroup  *PointsGroup
-	prevPointsGroup *PointsGroup
+	lifeBegin       int               // метка начала существования объекта
+	lifeEnd         int               // метка конца существования объекта
+	curPointsGroups *PointsGroupUnion // в объекте может быть несколько отдельных групп
+	// prevPointsGroup *PointsGroup
+	pointsGroupsChain []*PointsGroupUnion
 }
+
+func (o *Object) Merge(o2 *Object) *Object {
+	// TODO: сдияние двух объектов с одинаковым поведением или ещё что-то такое
+	// TODO: в результате появится новый объект ИЛИ текущий обновится (пожирнеет)
+	return nil
+}
+
+// func (o *Object) CheckSimilarity(o2 *Object) float64 {
+// 	// TODO: пока просто сравниваем текущие группы, в перспективе бы сравнивать историю
+// 	return o.curPointsGroups.Compare(o2.curPointsGroups)
+// }
 
 type ObjectType struct { // Alphabet
 	// содержит варианты дельт или варианты действий (сдвиг, поворот и пр.)
 
-	// сожержит признаки похожести, по которым можно сделать вывод о похожести объектов
+	// содержит признаки похожести, по которым можно сделать вывод о похожести объектов
+	// ИЛИ же по списку объектов можно пробежаться и сделать вывод о похожести
+	pgus []*PointsGroupUnion
 
 	// количество всех объектов такого типа (м.б. ссылки)
 	// количество живых объектов такого типа (м.б. ссылки)
+	objs []*Object
+}
+
+func (o *ObjectType) CheckSimilarity(oIn *Object) float64 {
+	// TODO: пока просто перебираем и отдаём самое похожее, но в перспективе более старые должны иметь меньшее внимание
+	resp := 0.0
+
+	// NOTE: вместо сравнения объектов лучше сравнить группы - так можно и историю зацепить
+	// for _, obj := range o.objs {
+	// 	if sim := oIn.CheckSimilarity(obj); sim > resp {
+	// 		resp = sim
+	// 	}
+	// }
+
+	for _, pgu := range o.pgus {
+		if sim := oIn.curPointsGroups.Compare(pgu); sim > resp {
+			resp = sim
+		}
+	}
+
+	return resp
 }
 
 // type Point [2]float64         // точка на экране - скорей всего будут использоваться исходные массивы, а это для образа
