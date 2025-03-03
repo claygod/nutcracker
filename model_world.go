@@ -54,6 +54,34 @@ func (m *ModelWorld) PushCurPointsGroups(pgu *PointsGroupUnion) {
 }
 
 /*
+WorkerObjGen - воркер генерации обьектов
+*/
+func (m *ModelWorld) WorkerObjGen() {
+	// TODO: implement me
+}
+
+/*
+WorkerSituationAnalysis - воркер анализа ситуации и прогнозирование
+*/
+func (m *ModelWorld) WorkerSituationAnalysis() {
+	// TODO: implement me
+}
+
+/*
+WorkerSelectAction - воркер выбора решения
+*/
+func (m *ModelWorld) WorkerSelectAction() {
+	// TODO: implement me
+}
+
+/*
+WorkerSend - воркер отправки решения
+*/
+func (m *ModelWorld) WorkerSend() {
+	// TODO: implement me
+}
+
+/*
 ObjectsHub - верхнеуровневая структура, выполняющая работу по поддержанию их в актуальном состоянии
 */
 type ObjectsHub struct {
