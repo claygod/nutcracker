@@ -1,6 +1,8 @@
 package nutcracker
 
 import (
+	"sort"
+
 	"github.com/lfritz/clustering/dbscan"
 	"github.com/lfritz/clustering/index"
 )
@@ -65,10 +67,12 @@ WorkerSituationAnalysis - воркер анализа ситуации и про
 */
 func (m *ModelWorld) WorkerSituationAnalysis() {
 	// TODO: implement me
+	// - тут должен быть доступ к состояниям (положительным, отрицательным)
+	//   чтобы было с чем сравнивать, т.е. делать выводы и оценивать
 }
 
 /*
-WorkerSelectAction - воркер выбора решения
+WorkerSelectAction - воркер выбора решения (м.б. это часть WorkerSituationAnalysis ??)
 */
 func (m *ModelWorld) WorkerSelectAction() {
 	// TODO: implement me
@@ -105,7 +109,45 @@ Problem - предположительно проблема, это:
 */
 type Problem struct {
 	// TODO:
-	og *ObjectsGroup
+	og     *ObjectsGroup
+	rating float64 // если объектов много, то могло бы быть так,
+	// что проблема отрацательна для чего-то одного и положительна для другого
+	// в шахматах мы жертвуем пешку чтобы получить коня, т.е. есть и плюсы и минусы
+	// но возможно, две рядом существующие проблемы - это выход, одна положительная, другая отрицательная
+}
+
+func (p *Problem) Copy() *Problem {
+	return nil // TODO: implement me
+}
+
+/*
+ProblemHub - верхнеуровневая структура, выполняющая работу по поддержанию Problem в актуальном состоянии
+*/
+type ProblemHub struct {
+	pList      []*Problem
+	lowerLimit float64
+}
+
+func (p *ProblemHub) PushProblem(prb *Problem) {
+}
+
+func (p *ProblemHub) GetActualProblem(og *ObjectsGroup) []*Problem {
+	out := make([]*Problem, 0)
+
+	for _, prb := range p.pList {
+		rate := prb.og.Compare(og)
+		if rate > p.lowerLimit {
+			pCopy := prb.Copy()
+			pCopy.rating *= rate
+			out = append(out, prb)
+		}
+	}
+
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].rating < out[j].rating
+	})
+
+	return out
 }
 
 /*
