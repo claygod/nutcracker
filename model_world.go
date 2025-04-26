@@ -21,8 +21,10 @@ ModelWorld - модель мира
 - Из предположений о будущем могут формироваться Проблемы
 - Предлагает следующий шаг (с характеристикой "уверенность")
 
-Получение изменений скорее всего через пуш. Т.е. получение следующей порции данных по готовности
+Получение изменений скорее всего через пул pull. Т.е. получение следующей порции данных по готовности
 Это отвязывает от входного потока и решает проблему постоянной синхронизации
+В то же время, получается, что модель мира работает с неким срезом "устаревших" данных
+Важный момент - надо определиться, кто кого дергает и в каком режиме ????
 */
 type ModelWorld struct {
 	// NOTE: ProblemWithAnswer скорей всего внутри, используется для/как ?? ОПРЕДЕЛИТЬСЯ
@@ -62,6 +64,8 @@ WorkerObjGen - воркер генерации обьектов
 */
 func (m *ModelWorld) WorkerObjGen() {
 	// TODO: implement me
+	//
+	// тут мы создаём объекты из входных групп и помещаем в репозиторий объектов
 }
 
 /*
@@ -82,6 +86,9 @@ func (m *ModelWorld) WorkerSituationAnalysis() {
 
 	// результат - набор проблем: ключ - действие, значение - список проблем с вероятностями
 
+	// получаем объекты (текущий срез)
+	// objs := m.objHub.GetActualObjects()
+
 }
 
 /*
@@ -98,6 +105,100 @@ func (m *ModelWorld) WorkerSend() {
 	// TODO: implement me
 }
 
+type ObjectsGroupWithPredictor struct {
+	og                *ObjectsGroup
+	mapObjTransducers map[int][]int // слепок изменений с
+	// TODO: сюда надо и информацию по близости к проблемам
+}
+
+type BranchPredictor struct {
+	trs map[int]*Transducer
+}
+
+func (b *BranchPredictor) Predict(og *ObjectsGroup) {
+	branchSets := make(map[int][][]int)
+
+	for i, obj := range og.objs {
+		listTr := make([]int, 0, len(b.trs)) // тут будет список изменений которые возможны
+
+		// формируем список поддерживаемых изменений
+		for trID, tr := range b.trs {
+			if tr.IsObjSupported(obj) {
+				listTr = append(listTr, trID)
+			}
+		}
+
+		// генерируем набор вариантов изменений (возсожно стохастически)
+		branchSets[i] = b.genChangeSets(listTr)
+	}
+
+	// это уже набор для генерации предполагаемых новых/дублированных и измененных объектов
+	finBranchSets := b.genBranchSets(branchSets)
+
+	ogwpList := make([]*ObjectsGroupWithPredictor, 0)
+
+	for _, brSet := range finBranchSets {
+		ogCopy := og.Copy()
+
+		listTrCopy := make(map[int][]int) // ключ тут из порядкового номера превратится в ключ-идентификатор
+
+		for i, listTr := range brSet {
+			for _, trID := range listTr {
+				ogCopy.objs[i] = ogCopy.objs[i].Transformation(b.trs[trID])
+			}
+
+			listTrCopy[ogCopy.objs[i].id] = listTr // это уже слепок изменения
+		}
+
+		ogwp := &ObjectsGroupWithPredictor{
+			og:                ogCopy,
+			mapObjTransducers: listTrCopy,
+		}
+
+		ogwpList = append(ogwpList, ogwp)
+	}
+
+	// по окончании в ogwpList набор вариантов для ОДНОГО шага
+	// TODO: теперь надо сделать рекурсию и предусмотреть:
+	// ------------ уровень вложенности
+	// ----------- * указание конкретной
+	// ----------- * можно менять гибко в процессе
+	// ----------- * можно прерывать все например из-за найденной ситуации
+	// ----------- * можно увеличивать глубину если хватает ресурсов
+
+	// return nil // TODO: implement me
+}
+
+func (b *BranchPredictor) genChangeSets(inList []int) [][]int {
+	outList := make([][]int, 0)
+
+	// пока простая заглушка, допускающая только одно изменение
+	// надо предусмотреть варианты невозможных одновременных изменений,
+	// т.к. мы не можем одновременно повернуть вправо и влево
+	for _, in := range inList {
+		outList = append(outList, []int{in})
+	}
+
+	// при необходимости обрезаем список
+
+	return outList // TODO: implement me
+}
+
+func (b *BranchPredictor) genBranchSets(inList map[int][][]int) []map[int][]int {
+	outList := make([]map[int][]int, 0)
+
+	// пока простая заглушка, допускающая только одно изменение
+	for objNum, sets := range inList {
+		item := make(map[int][]int)
+		item[objNum] = sets[0]
+		outList = append(outList, item)
+	}
+
+	// при необходимости обрезаем список
+
+	return outList // TODO: implement me
+}
+
 /*
 ObjectsHub - верхнеуровневая структура, выполняющая работу по поддержанию их в актуальном состоянии
 */
@@ -109,7 +210,8 @@ type ObjectsHub struct {
 func (o *ObjectsHub) PushCurPointsGroups(pgu *PointsGroupUnion) {
 }
 
-func (o *ObjectsHub) GetActualObjects() {
+func (o *ObjectsHub) GetActualObjects() []*Object {
+	return nil // TODO: implement me
 }
 
 /*
@@ -176,7 +278,12 @@ func (o *ObjectsGroup) Compare(o2 *ObjectsGroup) float64 {
 	return 0.0 // TODO: признак близости, далеко - это ноль
 }
 
+func (o *ObjectsGroup) Copy() *ObjectsGroup {
+	return nil // TODO: implement me
+}
+
 type Object struct {
+	id              int // пытаемся идентифицировать
 	objType         ObjectType
 	lifeBegin       int               // метка начала существования объекта
 	lifeEnd         int               // метка конца существования объекта
@@ -193,12 +300,17 @@ func (o *Object) Merge(o2 *Object) *Object {
 
 func (o *Object) Transformation(t *Transducer) *Object {
 	// TODO: преобразование на основе знания своего типа и своих параметров
-	//       возвращается копия самого себя
+	//       возвращается копии самого себя
 
 	return nil
 }
 
+func (o *Object) Copy() *Object {
+	return nil // TODO: implement me
+}
+
 type Transducer struct {
+	id       int           // надо как-то их различать, хотя возможно, идентификатор надо хранить "снаружи"
 	objTypes []*ObjectType // преобразует только определенные типы
 
 	// TODO: некий преобразователь, БАЗОВЫЙ!, то, что мы можем сделать (сдвиг влево-вправо)
@@ -207,8 +319,14 @@ type Transducer struct {
 	// Оперирует наверно *PointsGroupUnion
 }
 
-func (t *Transducer) Update(pgu *PointsGroupUnion) *PointsGroupUnion {
+func (t *Transducer) Update(obj *Object) *Object {
+	// например возвращаем объект только если он штменился
 	return nil // TODO: implement me
+}
+
+func (t *Transducer) IsObjSupported(obj *Object) bool {
+	// проверка на поддерживаемость для конкретного объекта (можем ли его изменить)
+	return true // TODO: implement me
 }
 
 type ObjectType struct {
@@ -216,6 +334,8 @@ type ObjectType struct {
 	// TODO: ОДНО из двух, надо разобраться и определиться
 	chs  []*Chainlet
 	chcs []*ChainletContainer
+
+	// achs []AtomicChanger // доступные изменятели
 
 	// содержит признаки похожести, по которым можно сделать вывод о похожести объектов
 	// ИЛИ же по списку объектов можно пробежаться и сделать вывод о похожести
