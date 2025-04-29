@@ -107,8 +107,26 @@ func (m *ModelWorld) WorkerSend() {
 
 type ObjectsGroupWithPredictor struct {
 	og                *ObjectsGroup
-	mapObjTransducers map[int][]int // слепок изменений с
+	mapObjTransducers *ObjectsGroupTransducers // слепок изменений
 	// TODO: сюда надо и информацию по близости к проблемам
+}
+
+func NewObjectsGroupTransducers() *ObjectsGroupTransducers {
+	return &ObjectsGroupTransducers{
+		data: make(map[int][]int),
+	}
+}
+
+type ObjectsGroupTransducers struct {
+	data map[int][]int
+}
+
+func (o *ObjectsGroupTransducers) FingerPrint() string {
+	return "" // TODO: implement me
+}
+
+func (o *ObjectsGroupTransducers) Set(objID int, transducersList []int) {
+	o.data[objID] = transducersList
 }
 
 type BranchPredictor struct {
@@ -116,6 +134,13 @@ type BranchPredictor struct {
 }
 
 func (b *BranchPredictor) Predict(og *ObjectsGroup) {
+	/*
+		Результат:
+		набор цепочек с оценкой на каждом шагу
+		(оценка появляется исходя из сравнения с проблемами)
+		NOTE: есть ли смысл в том, что эти цепочки подрастают (просчитываются дальше)
+	*/
+
 	branchSets := make(map[int][][]int)
 
 	for i, obj := range og.objs {
@@ -140,19 +165,19 @@ func (b *BranchPredictor) Predict(og *ObjectsGroup) {
 	for _, brSet := range finBranchSets {
 		ogCopy := og.Copy()
 
-		listTrCopy := make(map[int][]int) // ключ тут из порядкового номера превратится в ключ-идентификатор
+		obt := NewObjectsGroupTransducers()
 
 		for i, listTr := range brSet {
 			for _, trID := range listTr {
 				ogCopy.objs[i] = ogCopy.objs[i].Transformation(b.trs[trID])
 			}
 
-			listTrCopy[ogCopy.objs[i].id] = listTr // это уже слепок изменения
+			obt.Set(ogCopy.objs[i].id, listTr)
 		}
 
 		ogwp := &ObjectsGroupWithPredictor{
 			og:                ogCopy,
-			mapObjTransducers: listTrCopy,
+			mapObjTransducers: obt,
 		}
 
 		ogwpList = append(ogwpList, ogwp)
