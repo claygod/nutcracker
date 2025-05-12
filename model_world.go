@@ -190,8 +190,23 @@ func (b *BranchPredictor) Predict(og *ObjectsGroup) {
 	// ----------- * можно менять гибко в процессе
 	// ----------- * можно прерывать все например из-за найденной ситуации
 	// ----------- * можно увеличивать глубину если хватает ресурсов
+	//
+	// Нужно теперь разобраться, как работать с коллизиями, взаимодействием с другими объектами
+	// Это возможно на разных уровнях:
+	// - Внутри объекта, тогда он должен знать про другие объекты,
+	//   и может взаимодействовать только с теми что знает
+	// - Снаружи, когда взаимодействие оторвано,
+	//   т.е. оно может быть отдельным и унифицированным
+	//
+	// ПОИСК КОЛЛИЗИЙ!
+	// - получение коллизий
+	// - расчет результата коллизий
 
 	// return nil // TODO: implement me
+}
+
+func (b *BranchPredictor) checkOGCollision(inList []*ObjectsGroupWithPredictor) [][]*ObjectsGroupWithPredictor {
+	return nil // TODO: implement me
 }
 
 func (b *BranchPredictor) genChangeSets(inList []int) [][]int {
@@ -314,7 +329,7 @@ type Object struct {
 	lifeEnd         int               // метка конца существования объекта
 	curPointsGroups *PointsGroupUnion // в объекте может быть несколько отдельных групп
 	// prevPointsGroup *PointsGroup
-	pointsGroupsChain []*PointsGroupUnion // TODO: возможно отсюда брать прогноз поведения
+	pointsGroupsChain []*PointsGroupUnion // TODO: возможно отсюда брать прогноз поведения (ЭТО ПРЕДЫДУЩАЯ ИСТОРИЯ)
 }
 
 func (o *Object) Merge(o2 *Object) *Object {
@@ -342,6 +357,8 @@ type Transducer struct {
 	//       он естественно влияет только на некоторые или даже один объект (отбивалку),
 	//       но привязку к нужному типу объектов надо найти самостоятельно
 	// Оперирует наверно *PointsGroupUnion
+	//
+	// ОЧЕНЬ ВАЖНО: предполагаемое изменение делается с учетом предыдущей истории объекта!!
 }
 
 func (t *Transducer) Update(obj *Object) *Object {
